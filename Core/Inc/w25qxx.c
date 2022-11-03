@@ -215,6 +215,14 @@ bool	W25qxx_Init(void)
 			printf("w25qxx Chip: w25q10\r\n");
 			#endif
 		break;
+		case 0xBA21:	//	N25Q128A
+//			w25qxx.ID=N25Q128A;
+			w25qxx.ID=W25Q128;
+			w25qxx.BlockCount=256;
+			#if (_W25QXX_DEBUG==1)
+			printf("w25qxx Chip: N25Q128A\r\n");
+			#endif
+		break;
 		default:
 				#if (_W25QXX_DEBUG==1)
 				printf("w25qxx Unknown ID\r\n");
