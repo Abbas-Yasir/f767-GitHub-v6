@@ -1,0 +1,11 @@
+../Core/tjpg/tjpgd.c:127:14:alloc_pool	24	static
+../Core/tjpg/tjpgd.c:153:12:create_qt_tbl	40	static
+../Core/tjpg/tjpgd.c:189:12:create_huffman_tbl	56	static
+../Core/tjpg/tjpgd.c:244:12:bitext	32	static
+../Core/tjpg/tjpgd.c:294:16:huffext	48	static
+../Core/tjpg/tjpgd.c:354:13:block_idct	88	static
+../Core/tjpg/tjpgd.c:466:16:mcu_load	72	static
+../Core/tjpg/tjpgd.c:549:16:mcu_output	104	static
+../Core/tjpg/tjpgd.c:699:16:restart	32	static
+../Core/tjpg/tjpgd.c:746:9:jd_prepare	48	static
+../Core/tjpg/tjpgd.c:922:9:jd_decomp	40	static
