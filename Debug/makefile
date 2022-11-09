@@ -63,8 +63,8 @@ all: main-build
 main-build: f767-GitHub-v6.elf secondary-outputs
 
 # Tool invocations
-f767-GitHub-v6.elf f767-GitHub-v6.map: $(OBJS) $(USER_OBJS) D:\Micro\ Orbiter\GitHub\f767-GitHub-v6\STM32F767BITX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "f767-GitHub-v6.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m7 -T"D:\Micro Orbiter\GitHub\f767-GitHub-v6\STM32F767BITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="f767-GitHub-v6.map" -Wl,--gc-sections -static -L../Middlewares/ST/AI/Lib --specs=nano.specs -mfpu=fpv5-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+f767-GitHub-v6.elf f767-GitHub-v6.map: $(OBJS) $(USER_OBJS) C:\Users\I-Satellite\ Society\Documents\GitHub\f767-GitHub-v6\STM32F767BITX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "f767-GitHub-v6.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m7 -T"C:\Users\I-Satellite Society\Documents\GitHub\f767-GitHub-v6\STM32F767BITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="f767-GitHub-v6.map" -Wl,--gc-sections -static -L../Middlewares/ST/AI/Lib --specs=nano.specs -mfpu=fpv5-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
