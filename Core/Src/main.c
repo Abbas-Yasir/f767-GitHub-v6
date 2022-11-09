@@ -449,7 +449,7 @@ int main(void)
 
   while (1)
   {
-		printf("Loop\r\n");
+		printf("Loop \r\n");
 
 		work = (void*)malloc(sz_work);
 	  	count++;

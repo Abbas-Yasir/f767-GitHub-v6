@@ -3099,7 +3099,7 @@ int main(void)
 
   while (1)
   {
-		printf("Loop\r\n");
+		printf("Loop \r\n");
  800179e:	481a      	ldr	r0, [pc, #104]	; (8001808 <main+0x650>)
  80017a0:	f00d fe7a 	bl	800f498 <puts>
 
