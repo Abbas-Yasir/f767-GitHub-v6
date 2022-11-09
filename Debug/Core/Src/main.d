@@ -36,7 +36,16 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_uart_ex.h \
  ../Core/Inc/crc.h ../Core/Inc/main.h ../Core/Inc/dma.h \
  ../Core/Inc/quadspi.h ../Core/Inc/spi.h ../Core/Inc/tim.h \
- ../Core/Inc/usart.h ../Core/Inc/gpio.h ../Core/Inc/images.h \
+ ../Core/Inc/usart.h ../Core/Inc/gpio.h \
+ ../Middlewares/ST/AI/Inc/ai_datatypes_defines.h \
+ ../Middlewares/ST/AI/Inc/ai_platform.h ../X-CUBE-AI/App/network_data.h \
+ ../X-CUBE-AI/App/network.h \
+ ../Middlewares/ST/AI/Inc/ai_platform_interface.h \
+ ../Middlewares/ST/AI/Inc/datatypes_network.h \
+ ../Middlewares/ST/AI/Inc/ai_datatypes_format.h \
+ ../Middlewares/ST/AI/Inc/core_datatypes.h \
+ ../Middlewares/ST/AI/Inc/formats_list.h ../X-CUBE-AI/App/sine_model.h \
+ ../X-CUBE-AI/App/sine_model_data.h ../Core/Inc/images.h \
  ../Core/Inc/w25qxx.h ../Core/Inc/spi.h ../Core/Inc/w25qxxConf.h \
  ../Core/Src/..\\tjpg\\tjpgd.h
 ../Core/Inc/main.h:
@@ -83,6 +92,17 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../Core/Inc/tim.h:
 ../Core/Inc/usart.h:
 ../Core/Inc/gpio.h:
+../Middlewares/ST/AI/Inc/ai_datatypes_defines.h:
+../Middlewares/ST/AI/Inc/ai_platform.h:
+../X-CUBE-AI/App/network_data.h:
+../X-CUBE-AI/App/network.h:
+../Middlewares/ST/AI/Inc/ai_platform_interface.h:
+../Middlewares/ST/AI/Inc/datatypes_network.h:
+../Middlewares/ST/AI/Inc/ai_datatypes_format.h:
+../Middlewares/ST/AI/Inc/core_datatypes.h:
+../Middlewares/ST/AI/Inc/formats_list.h:
+../X-CUBE-AI/App/sine_model.h:
+../X-CUBE-AI/App/sine_model_data.h:
 ../Core/Inc/images.h:
 ../Core/Inc/w25qxx.h:
 ../Core/Inc/spi.h:
