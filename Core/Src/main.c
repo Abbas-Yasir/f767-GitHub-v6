@@ -191,6 +191,30 @@ return ch;
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+// Pointer to our model
+ai_handle sine_model = AI_HANDLE_NULL;
+
+// Chunk of memory used to hold intermediate values for neural network
+ai_u8 activations[AI_SINE_MODEL_DATA_ACTIVATIONS_SIZE];
+
+// Buffers used to store input and output tensors
+ai_i8 in_data[AI_SINE_MODEL_IN_1_SIZE_BYTES];
+ai_i8 out_data[AI_SINE_MODEL_OUT_1_SIZE_BYTES];
+
+
+
+// Pointer to our model
+ai_handle icu_tflite = AI_HANDLE_NULL;
+
+// Chunk of memory used to hold intermediate values for neural network
+ai_u8 activations_ICU[AI_NETWORK_DATA_ACTIVATIONS_SIZE];
+
+// Buffers used to store input and output tensors
+ai_i8 image[AI_NETWORK_IN_1_SIZE_BYTES];
+ai_i8 out_data_ICU[AI_NETWORK_OUT_1_SIZE_BYTES];
+
+
+
 typedef struct {
     uint32_t fp;          																							/* File pointer for input function */
     uint8_t *fbuf;     																								/* Pointer to the frame buffer for output function */
@@ -258,17 +282,17 @@ int main(void)
 	  double predict;
 	  uint8_t SR = 0x24;
 
-	  size_t sz_work = 5100;
+	  size_t sz_work = 3100;
 
 	  char buf[50];
 	  int buf_len = 0;
 
-	  ai_error ai_err;
-	  ai_error ai_err_ICU;
+//	  ai_error ai_err;
+//	  ai_error ai_err_ICU;
 
 
-	  ai_i32 nbatch;
-	  ai_i32 nbatch_ICU;
+//	  ai_i32 nbatch;
+//	  ai_i32 nbatch_ICU;
 
 	  uint32_t timestamp;
 	  uint32_t timestamp_ICU;
@@ -276,67 +300,6 @@ int main(void)
 	  uint8_t prediction = 0xFF;
 
 	  float y_val;
-
-	  // Chunk of memory used to hold intermediate values for neural network
-	  ai_u8 activations[AI_SINE_MODEL_DATA_ACTIVATIONS_SIZE];
-
-	  // Buffers used to store input and output tensors
-	  ai_i8 in_data[AI_SINE_MODEL_IN_1_SIZE_BYTES];
-	  ai_i8 out_data[AI_SINE_MODEL_OUT_1_SIZE_BYTES];
-
-	  // Pointer to our model
-	  ai_handle sine_model = AI_HANDLE_NULL;
-
-	  // Initialize wrapper structs that hold pointers to data and info about the
-	  // data (tensor height, width, channels)
-	  ai_buffer ai_input[AI_SINE_MODEL_IN_NUM] = AI_SINE_MODEL_IN;
-	  ai_buffer ai_output[AI_SINE_MODEL_OUT_NUM] = AI_SINE_MODEL_OUT;
-
-
-	  // Set working memory and get weights/biases from model
-	  ai_network_params ai_params = {
-	    AI_SINE_MODEL_DATA_WEIGHTS(ai_sine_model_data_weights_get()),
-	    AI_SINE_MODEL_DATA_ACTIVATIONS(activations)
-	  };
-
-
-
-	  // Chunk of memory used to hold intermediate values for neural network
-	  ai_u8 activations_ICU[AI_NETWORK_DATA_ACTIVATIONS_SIZE];
-
-	  // Buffers used to store input and output tensors
-	  ai_i8 image[AI_NETWORK_IN_1_SIZE_BYTES];
-	  ai_i8 out_data_ICU[AI_NETWORK_OUT_1_SIZE_BYTES];
-
-	  // Pointer to our model
-	  ai_handle icu_tflite = AI_HANDLE_NULL;
-
-	  // Initialize wrapper structs that hold pointers to data and info about the
-	  // data (tensor height, width, channels)
-	  ai_buffer ai_input_ICU[AI_NETWORK_IN_NUM] = AI_NETWORK_IN;
-	  ai_buffer ai_output_ICU[AI_NETWORK_OUT_NUM] = AI_NETWORK_OUT;
-
-	  // Set working memory and get weights/biases from model
-//	  ai_network_params ai_params_ICU = AI_NETWORK_PARAMS_INIT(AI_NETWORK_DATA_WEIGHTS(ai_network_data_weights_get()), AI_NETWORK_DATA_ACTIVATIONS(activations_ICU));
-	  ai_network_params ai_params_ICU = {
-			  AI_NETWORK_DATA_WEIGHTS(ai_network_data_weights_get()),
-			  AI_NETWORK_DATA_ACTIVATIONS(activations_ICU)
-	  };
-
-
-	  		ai_input_ICU[0].n_batches = 1;
-	  		ai_input_ICU[0].data = AI_HANDLE_PTR(image);
-	  		ai_output_ICU[0].n_batches = 1;
-	  		ai_output_ICU[0].data = AI_HANDLE_PTR(out_data_ICU);
-
-	  		//End of ICU part 2
-
-
-	  	  // Set pointers wrapper structs to our data buffers
-	  	  ai_input[0].n_batches = 1;
-	  	  ai_input[0].data = AI_HANDLE_PTR(in_data);
-	  	  ai_output[0].n_batches = 1;
-	  	  ai_output[0].data = AI_HANDLE_PTR(out_data);
 
   /* USER CODE END 1 */
 
@@ -382,61 +345,11 @@ int main(void)
   buf_len = sprintf(buf, "\r\n\r\nSTM32 X-Cube-AI\r\n");
   HAL_UART_Transmit(&debugPort, (uint8_t *) &buf, buf_len, 100);
 
-
-  // Create instance of neural network
-  ai_err = ai_sine_model_create(&sine_model, AI_SINE_MODEL_DATA_CONFIG);
-  if (ai_err.type != AI_ERROR_NONE)
-  {
-    buf_len = sprintf(buf, "Error: could not create NN instance\r\n");
-    HAL_UART_Transmit(&debugPort, (uint8_t *)buf, buf_len, 100);
-    while(1);
-  }
-  else
-  {
-	    buf_len = sprintf(buf, "NN instance created! \r\n");
-	    HAL_UART_Transmit(&debugPort, (uint8_t *) &buf, buf_len, 100);
-  }
-
-  // Initialize neural network
-  if (!ai_sine_model_init(sine_model, &ai_params))
-  {
-    buf_len = sprintf(buf, "Error: could not initialize NN\r\n");
-    HAL_UART_Transmit(&debugPort, (uint8_t *)buf, buf_len, 100);
-    while(1);
-  }
-  else
-  {
-	    buf_len = sprintf(buf, "NN initialized\r\n");
-	    HAL_UART_Transmit(&debugPort, (uint8_t *) &buf, buf_len, 100);
-  }
+//  __HAL_RCC_CRC_CLK_ENABLE();
+  ai_init_sine_model();
+  ai_init_ICU();
 
 
-  // Create instance of neural network
-  ai_err_ICU = ai_network_create(&icu_tflite, AI_NETWORK_DATA_CONFIG);
-  if (ai_err_ICU.type != AI_ERROR_NONE)
-  {
-    buf_len = sprintf(buf, "Error: could not create NN instance\r\n");
-    HAL_UART_Transmit(&debugPort, (uint8_t *) &buf, buf_len, 100);
-    while(1);
-  }
-  else
-  {
-	    buf_len = sprintf(buf, "NN instance created! \r\n");
-	    HAL_UART_Transmit(&debugPort, (uint8_t *) &buf, buf_len, 100);
-  }
-
-  // Initialize neural network
-  if (!ai_network_init(icu_tflite, &ai_params_ICU))
-  {
-    buf_len = sprintf(buf, "Error: could not initialize NN\r\n");
-    HAL_UART_Transmit(&debugPort, (uint8_t *) &buf, buf_len, 100);
-    while(1);
-  }
-  else
-  {
-	    buf_len = sprintf(buf, "NN initialized\r\n");
-	    HAL_UART_Transmit(&debugPort, (uint8_t *) &buf, buf_len, 100);
-  }
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -470,11 +383,7 @@ int main(void)
 			timestamp = htim13.Instance->CNT;
 
 			// Perform inference
-			nbatch = ai_sine_model_run(sine_model, &ai_input[0], &ai_output[0]);
-			if (nbatch != 1) {
-			  buf_len = sprintf(buf, "Error: could not run inference\r\n");
-			  HAL_UART_Transmit(&debugPort, (uint8_t *)buf, buf_len, 100);
-			}
+			ai_run_sine_model(in_data, out_data);
 
 			// Read output (predicted y) of neural network
 			y_val = ((float *)out_data)[0];
@@ -489,10 +398,8 @@ int main(void)
 			// Wait before doing it again
 			HAL_Delay(500);
 
-
+//
 	  	handshakeCAM = 0;
-
-
 
 			StringLength=sprintf(txString,"\r\n\nImage Processing Starts Now\r\n");
 			HAL_UART_Transmit(&debugPort, (uint8_t *) &txString, StringLength, 100);
@@ -500,12 +407,10 @@ int main(void)
 			HAL_Delay(1000);
 			devid.fp=0;
 //			devid.fp= Space;
-			devid.fp= count%3 * 0x10000;
-
+//			devid.fp= count%3 * 0x10000;
+//
 			StringLength=sprintf(txString,"\r\n");
 			HAL_UART_Transmit(&debugPort, (uint8_t *) &txString, StringLength, 100);
-
-//			display_bulk_4ByteAdd_SharedFM(0x00000000, 3500);
 
 			res = jd_prepare(&jdec, in_func, work, sz_work, &devid);													/* Prepare to decompress */
 			if (res == JDR_OK)
@@ -523,21 +428,23 @@ int main(void)
 				StringLength=sprintf(txString,"\r\n\nPreparation for Decompression - Success\r\n");
 				HAL_UART_Transmit(&debugPort, (uint8_t *) &txString, StringLength, 100);
 
-				res = jd_decomp(&jdec, out_func, compression_ratio);   																/* Start to decompress with 1-1 scaling*/
-				if (res == JDR_OK) {
-					StringLength=sprintf(txString,"Decompression - Success\r\n");
-					HAL_UART_Transmit(&debugPort, (uint8_t *) &txString, StringLength, 100);
-				}
-				else{
-					StringLength=sprintf(txString,"%d - Decompression - Failed\r\n",res);
-					HAL_UART_Transmit(&debugPort, (uint8_t *) &txString, StringLength, 100);
-				}
+//				res = jd_decomp(&jdec, out_func, compression_ratio);   																/* Start to decompress with 1-1 scaling*/
+//				if (res == JDR_OK)
+//				{
+//					StringLength=sprintf(txString,"Decompression - Success\r\n");
+//					HAL_UART_Transmit(&debugPort, (uint8_t *) &txString, StringLength, 100);
+//				}
+//				else
+//				{
+//					StringLength=sprintf(txString,"%d - Decompression - Failed\r\n",res);
+//					HAL_UART_Transmit(&debugPort, (uint8_t *) &txString, StringLength, 100);
+//				}
 			}
-			else{
+			else
+			{
 			  StringLength=sprintf(txString,"\r\n\n %d - Preparation for Decompression - Failed\r\n",res);
 			  HAL_UART_Transmit(&debugPort, (uint8_t *) &txString, StringLength, 100);
 			}
-
 			HAL_Delay(1000);
 
 
@@ -546,8 +453,8 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	free(work);
-	free(devid.fbuf);
+			free(work);
+			free(devid.fbuf);
   }
   /* USER CODE END 3 */
 }
@@ -607,6 +514,164 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+void ai_init_ICU(void)
+{
+	char buf[50];
+	int buf_len = 0;
+	ai_error ai_err_ICU;
+
+
+	// Create instance of neural network
+	ai_err_ICU = ai_network_create(&icu_tflite, AI_NETWORK_DATA_CONFIG);
+	if (ai_err_ICU.type != AI_ERROR_NONE)
+	{
+	  buf_len = sprintf(buf, "E: AI ai_network_create error - type=%d code=%d\r\n", ai_err_ICU.type, ai_err_ICU.code);
+	  HAL_UART_Transmit(&debugPort, (uint8_t *) &buf, buf_len, 100);
+	  while(1);
+	}
+	else
+	{
+		    buf_len = sprintf(buf, "NN instance created! \r\n");
+		    HAL_UART_Transmit(&debugPort, (uint8_t *) &buf, buf_len, 100);
+	}
+
+	// Set working memory and get weights/biases from model
+	//	  ai_network_params ai_params_ICU = AI_NETWORK_PARAMS_INIT(AI_NETWORK_DATA_WEIGHTS(ai_network_data_weights_get()), AI_NETWORK_DATA_ACTIVATIONS(activations_ICU));
+	ai_network_params ai_params_ICU = {
+			  AI_NETWORK_DATA_WEIGHTS(ai_network_data_weights_get()),
+			  AI_NETWORK_DATA_ACTIVATIONS(activations_ICU)
+	};
+
+
+	// Initialize neural network
+	if (!ai_network_init(icu_tflite, &ai_params_ICU))
+	{
+	  buf_len = sprintf(buf, "E: AI ai_network_init error - type=%d code=%d\r\n", ai_err_ICU.type, ai_err_ICU.code);
+	  HAL_UART_Transmit(&debugPort, (uint8_t *) &buf, buf_len, 100);
+	  while(1);
+	}
+	else
+	{
+		    buf_len = sprintf(buf, "NN initialized\r\n");
+		    HAL_UART_Transmit(&debugPort, (uint8_t *) &buf, buf_len, 100);
+	}
+
+}
+
+void ai_init_sine_model(void)
+{
+	char buf[50];
+	int buf_len = 0;
+	ai_error ai_err;
+
+	// Create instance of neural network
+	ai_err = ai_sine_model_create(&sine_model, AI_SINE_MODEL_DATA_CONFIG);
+	if (ai_err.type != AI_ERROR_NONE)
+	{
+	  buf_len = sprintf(buf, "E: AI ai_network_create error - type=%d code=%d\r\n", ai_err.type, ai_err.code);
+	  HAL_UART_Transmit(&debugPort, (uint8_t *)buf, buf_len, 100);
+	  while(1);
+	}
+	else
+	{
+		    buf_len = sprintf(buf, "NN instance created! \r\n");
+		    HAL_UART_Transmit(&debugPort, (uint8_t *) &buf, buf_len, 100);
+	}
+
+	// Set working memory and get weights/biases from model
+	ai_network_params ai_params = {
+	  AI_SINE_MODEL_DATA_WEIGHTS(ai_sine_model_data_weights_get()),
+	  AI_SINE_MODEL_DATA_ACTIVATIONS(activations)
+	};
+
+	// Initialize neural network
+	if (!ai_sine_model_init(sine_model, &ai_params))
+	{
+	  buf_len = sprintf(buf, "E: AI ai_network_init error - type=%d code=%d\r\n", ai_err.type, ai_err.code);
+	  HAL_UART_Transmit(&debugPort, (uint8_t *)buf, buf_len, 100);
+	  while(1);
+	}
+	else
+	{
+		    buf_len = sprintf(buf, "NN initialized\r\n");
+		    HAL_UART_Transmit(&debugPort, (uint8_t *) &buf, buf_len, 100);
+	}
+}
+
+
+int ai_run_sine_model(const void *image, void *out_data)
+{
+	char buf[50];
+	int buf_len = 0;
+	ai_i32 n_batch;
+	ai_error ai_err;
+
+	// Initialize wrapper structs that hold pointers to data and info about the
+	// data (tensor height, width, channels)
+	ai_buffer ai_input[AI_SINE_MODEL_IN_NUM] = AI_SINE_MODEL_IN;
+	ai_buffer ai_output[AI_SINE_MODEL_OUT_NUM] = AI_SINE_MODEL_OUT;
+
+	// Set pointers wrapper structs to our data buffers
+	ai_input[0].n_batches = 1;
+	ai_input[0].data = AI_HANDLE_PTR(in_data);
+	ai_output[0].n_batches = 1;
+	ai_output[0].data = AI_HANDLE_PTR(out_data);
+
+	// Perform inference
+	n_batch = ai_sine_model_run(sine_model, &ai_input[0], &ai_output[0]);
+
+
+	if (n_batch != 1)
+	{
+		ai_err = ai_network_get_error(sine_model);
+		buf_len = sprintf(buf, "E: AI ai_network_run error - type=%d code=%d\r\n", ai_err.type, ai_err.code);
+		HAL_UART_Transmit(&debugPort, (uint8_t *) &buf, buf_len, 100);
+	}
+	else
+	{
+		buf_len = sprintf(buf, "\r\nRunning ICU tflite done!\r\n");
+		HAL_UART_Transmit(&debugPort, (uint8_t *) &buf, buf_len, 100);
+	}
+}
+
+
+
+int ai_run_ICU(const void *image, void *out_data)
+{
+	char buf[50];
+	int buf_len = 0;
+	ai_i32 n_batch;
+	ai_error ai_err;
+
+	// Initialize wrapper structs that hold pointers to data and info about the
+	// data (tensor height, width, channels)
+	ai_buffer ai_input[AI_NETWORK_IN_NUM] = AI_NETWORK_IN;
+	ai_buffer ai_output[AI_NETWORK_OUT_NUM] = AI_NETWORK_OUT;
+
+	ai_input[0].n_batches = 1;
+	ai_input[0].data = AI_HANDLE_PTR(image);
+	ai_output[0].n_batches = 1;
+	ai_output[0].data = AI_HANDLE_PTR(out_data);
+
+	    // Perform inference
+		n_batch = ai_network_run(icu_tflite, &ai_input[0], &ai_output[0]);
+
+	    if (n_batch != 1)
+	    {
+	      ai_err = ai_network_get_error(icu_tflite);
+	      buf_len = sprintf(buf, "E: AI ai_network_run error - type=%d code=%d\r\n", ai_err.type, ai_err.code);
+	      HAL_UART_Transmit(&debugPort, (uint8_t *) &buf, buf_len, 100);
+	      return 0;
+	    }
+	    else
+	    {
+	  	    buf_len = sprintf(buf, "\r\nRunning ICU tflite done!\r\n");
+	  	    HAL_UART_Transmit(&debugPort, (uint8_t *) &buf, buf_len, 100);
+	    }
+	    return 1;
+}
+
 
 /* USER CODE END 4 */
 
